@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+## Test whether a contributor's topic branch can be applied with FF-only, and if so, apply it.  Otherwise, report an error.
+
+echo "TODO"
+
+
