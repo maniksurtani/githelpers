@@ -1,0 +1,15 @@
+# githelpers 
+
+This is a set of scripts that help perform some common tasks
+interacting with [Infinispan](http://www.infinispan.org)'s [git repository](http://github.com/infinispan/infinispan) setup, often
+causing contributors to fork an upstream repository and work
+off the fork, while keeping in sync with the upstream repo.
+
+Scripts also exist to help project admins pull in contributions
+via pull requests.
+
+While these scripts have been written for Infinispan, they can
+easily be adapted for use with other projects as well, that
+follow similar processes.
+
+ 
