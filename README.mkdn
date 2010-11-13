@@ -12,4 +12,20 @@ While these scripts have been written for Infinispan, they can
 easily be adapted for use with other projects as well, that
 follow similar processes.
 
+## contributors
+
+This directory contains scripts commonly used by contributors
+to Infinispan.
+
+## project_admins
+
+This contains additional scripts used by project admins - folks
+with push privileges on the upstream repo - and would be used
+to supplement the scripts in ``contributors``.
+
+# Installation
+
+Very simple - copy the lot to ``${HOME}/bin``.  The scripts are all 
+written in [BASH] (http://en.wikipedia.org/wiki/Bash_(Unix_shell)) and should 
+be executable (``chmod 755 *.sh``).
  
