@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+#
+############################################################################
+#
+# Name: sync_with_upstream
+# Author: Manik Surtani (http://github.com/maniksurtani)
+# Description: This script updates a fork of an upstream repository with new 
+#              changes in the upstream.  It is designed to be run on a local 
+#              clone of the fork.  In addition to updating necessary branches,
+#              the script also rebases any topic branches that may exist.
+#
+# Configuration: The following variables need to be set.
+
+
+UPSTREAM_REPO="upstream" # Can be a named remote, or a full URL, such as https://github.com/infinispan/infinispan
+ORIGIN_REPO="origin" # The fork of upstream.  Can be a named remote or a full URL.
+BRANCHES_TO_SYNC=["master", "4.2.x"] # These need to be on both the upstream, your fork and your clone.
+TOPIC_BRANCH_PREFIX="t_" # All branches whose name starts with this will be rebased against their updated branch point
+GIT="git" # Path to the git binary executable
+
+#
+############################################################################
+
+import os
+from os import path
+import sys
+import subprocess
+
+def init(): 
+  if not os.path.isdir(".git"):
+    print "This script MUST be run in the local clone of your forked repo!"
+    sys.exit(1)
+  print "Fetching new details from upstream"
+  subprocess.check_call([GIT, "fetch", "-q", UPSTREAM_REPO])
+  subprocess.check_call([GIT, "fetch", "-q", UPSTREAM_REPO, "--tags"])
+
+def handle_release_branches():
+  for branch in BRANCHES_TO_SYNC:
+    print "Synchronizing release branch %s" % branch
+    subprocess.check_call([GIT, "checkout", "-q", branch])
+    output = subprocess.Popen([GIT, "status", "--porcelain"], stdout=subprocess.PIPE).communicate()[0]
+    stash = False
+    if output != "": 
+      stash = True
+      subprocess.check_call([GIT, "stash"])    
+      
+    subprocess.check_call([GIT, "pull", "-q", UPSTREAM_REPO, branch])    
+    subprocess.check_call([GIT, "push", "-q", ORIGIN_REPO, branch])    
+    
+    if stash:
+      subprocess.check_call([GIT, "stash", "pop"])
+      
+    subprocess.check_call([GIT, "push", "-q", ORIGIN_REPO, "--tags"])
+
+def handle_topics(): 
+  ## Now handle topic branches.
+  b = subprocess.Popen([GIT, "branch"], stdout=subprocess.PIPE).communicate()[0]
+  branches = b.replace(' ', '').replace('*','').split('\n')
+  print "Brancges are %s " % branches
+  for branch in branches: 
+    if branch.startswith(TOPIC_BRANCH_PREFIX):
+      print "Analysing topic branch %s" % branch
+      base_guess = {}
+      for relbranch in BRANCHES_TO_SYNC:
+        subprocess.check_call([GIT, "checkout", "-q", branch])
+        commits = subprocess.Popen([GIT, "--no-pager", "log", "--pretty=oneline", "%s..HEAD" % relbranch], stdout=subprocess.PIPE).communicate()[0]
+        base_guess[relbranch] = len(commits.split('\n'))
+    
+      # print "Likely release branches for topic %s are %s" % (branch, base_guess)      
+      items = [(v, k) for k, v in base_guess.items()]
+      items.sort()
+      # print "Likely release branches for topic %s are %s" % (branch, items)      
+      base_branch = items[0][1]
+      print "Rebasing using git rebase %s" % base_branch
+      subprocess.check_call([GIT, "rebase", base_branch])
+      subprocess.check_call([GIT, "push", "-f", ORIGIN_REPO, branch])
+
+init()
+handle_release_branches()
+print "Local clone and %s synced with %s" % (ORIGIN_REPO, UPSTREAM_REPO)
+print "Now rebasing all topic branches that start with '%s'" % TOPIC_BRANCH_PREFIX
+handle_topics()
+
+
+      
+      
+
+    
+
+
+
+
+
+

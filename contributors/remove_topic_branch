@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+############################################################################
+#
+# Name: remove_topic_branch
+# Author: Manik Surtani (http://github.com/maniksurtani)
+# Description: This script removes a topic branch - both locally as well as
+#              on the origin.
+#
+# Configuration: The following variables need to be set.
+
+ORIGIN_REPO="origin" # The fork of upstream.  Can be a named remote or a full URL.
+GIT="git" # Path to the git binary executable
+
+#
+############################################################################
+
+if [ ! -d ".git" ] ; then
+  echo "This script MUST be run in the local clone of your forked repo"
+  exit
+fi
+
+if [ -z $1 ] ; then 
+  echo "Usage: remove_topic_branch <name of topic branch to remove>"
+  exit
+fi
+
+$GIT branch -D $1
+$GIT push -q -f $ORIGIN_REPO :${1}
+
+echo "Topic branch $1 removed both locally and on $ORIGIN_REPO"
