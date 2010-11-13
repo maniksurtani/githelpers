@@ -26,7 +26,8 @@ to supplement the scripts in ``contributors``.
 # Installation
 
 Very simple - copy the lot to ``${HOME}/bin``.  The scripts are all 
-written in [BASH][] and should 
+written in [BASH][] or [Python][] and should 
 be executable (``chmod 755 *.sh``).
  
 [BASH]: http://en.wikipedia.org/wiki/Bash_(Unix_shell) "BASH"
+[Python]: http://www.python.org "Python"
