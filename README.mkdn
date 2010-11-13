@@ -26,6 +26,6 @@ to supplement the scripts in ``contributors``.
 # Installation
 
 Very simple - copy the lot to ``${HOME}/bin``.  The scripts are all 
-written in [BASH] (http://en.wikipedia.org/wiki/Bash_(Unix_shell)) and should 
+written in [BASH](http://en.wikipedia.org/wiki/Bash_(Unix_shell)) and should 
 be executable (``chmod 755 *.sh``).
  
