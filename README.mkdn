@@ -72,6 +72,19 @@ E.g.,
 
 ``$ pull_fast_forward vlads_repo t_ISPN-1234 master -f``
 
+### update_release_branches
+
+This script, when run in a local clone of upstream, will pull down changes from 
+upstream onto the release branches so you are in sync with other project admins.
+
+E.g.,
+
+``$ update_release_branches``
+
+Name specific branches to update:
+
+``$ update_release_branches 4.2.x master``
+
 # Installation
 
 Very simple - copy the lot to ``${HOME}/bin``.  The scripts are all 

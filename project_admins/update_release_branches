@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+#
+############################################################################
+#
+# Name: update_release_branches
+# Author: Manik Surtani (http://github.com/maniksurtani)
+# Description: This script updates release branches on your local clone with
+#              what's available on your remote origin.
+#
+# Configuration: The following variables need to be set.
+
+BRANCHES_TO_SYNC="4.0.x 4.1.x 4.2.x master"
+ORIGIN_REPO="origin" # The fork of upstream.  Can be a named remote or a full URL.
+GIT="git" # Path to the git binary executable
+
+#
+############################################################################
+
+if [ ! -d ".git" ] ; then
+  echo "This script MUST be run in the local clone of your forked repo"
+  exit
+fi
+
+sync_branch() {
+  b=$1
+  echo "  Syncing branch $b"
+  $GIT branch $b > /dev/null 2>&1
+  $GIT checkout -q $b
+  $GIT pull -q --ff-only $ORIGIN_REPO $b  
+}
+
+$GIT fetch -q
+$GIT fetch -q --tags
+
+if [ ! -z $1 ] ; then 
+  BRANCHES_TO_SYNC=$*
+fi
+
+for i in $BRANCHES_TO_SYNC ; do
+  sync_branch $i
+done
+
+echo "Release branches [$BRANCHES_TO_SYNC] updated with contents from $ORIGIN_REPO"
