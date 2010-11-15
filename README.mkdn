@@ -54,7 +54,7 @@ to supplement the scripts in ``contributors``.
 
 ### pull_fast_forward
 
-This script handles a pull request.  It takes in some parameters:
+This script handles a pull request, and _must_ be run in a _local_ clone of _upstream_.  (*Not* a clone of your personal fork!)  It takes in some parameters:
 
  * URL or remote repository name
  * Topic branch name on remote repo
