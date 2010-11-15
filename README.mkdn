@@ -46,6 +46,17 @@ E.g.,
 
 ``$ sync_with_upstream``
 
+Optionally, you can change the remote from which changes are passed.
+To do so, simply pass -u or --upstream_repo followed by the remote name
+or URL, i.e.
+
+``$ sync_with_upstream -u infinispan-upstream``
+
+And you can also pass the branches to merge in a comma separated string
+via -b or --branches parameter, i.e.
+
+``$ sync_with_upstream -b 4.0.x,4.1.x,4.2.x,master``
+
 ## project_admins
 
 This contains additional scripts used by project admins - folks
