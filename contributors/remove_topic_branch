@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+#
 ############################################################################
 #
 # Name: remove_topic_branch
@@ -25,6 +25,7 @@ if [ -z $1 ] ; then
   exit
 fi
 
+$GIT checkout master
 $GIT branch -D $1
 $GIT push -q -f $ORIGIN_REPO :${1}
 

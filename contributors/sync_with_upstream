@@ -26,31 +26,38 @@ from os import path
 import sys
 import subprocess
 
+def run_git(opts):
+  call = [GIT]
+  for o in opts.split(' '):
+    if o != '':
+      call.append(o)
+  subprocess.check_call(call)
+
 def init(): 
   if not os.path.isdir(".git"):
     print "This script MUST be run in the local clone of your forked repo!"
     sys.exit(1)
   print "Fetching new details from upstream"
-  subprocess.check_call([GIT, "fetch", "-q", UPSTREAM_REPO])
-  subprocess.check_call([GIT, "fetch", "-q", UPSTREAM_REPO, "--tags"])
+  run_git("fetch -q %s" % UPSTREAM_REPO)
+  run_git("fetch -q %s --tags" % UPSTREAM_REPO)
 
 def handle_release_branches():
   for branch in BRANCHES_TO_SYNC:
     print "Synchronizing release branch %s" % branch
-    subprocess.check_call([GIT, "checkout", "-q", branch])
+    run_git("checkout -q %s" % branch)
     output = subprocess.Popen([GIT, "status", "--porcelain"], stdout=subprocess.PIPE).communicate()[0]
     stash = False
     if output != "": 
       stash = True
-      subprocess.check_call([GIT, "stash"])    
-      
-    subprocess.check_call([GIT, "pull", "-q", UPSTREAM_REPO, branch])    
-    subprocess.check_call([GIT, "push", "-q", ORIGIN_REPO, branch])    
+      run_git("stash")
+    
+    run_git("pull -q %s %s" % (UPSTREAM_REPO, branch))
+    run_git("push -q %s %s" % (ORIGIN_REPO, branch))  
     
     if stash:
-      subprocess.check_call([GIT, "stash", "pop"])
-      
-    subprocess.check_call([GIT, "push", "-q", ORIGIN_REPO, "--tags"])
+      run_git("stash pop")
+    
+    run_git("push -q %s --tags" % ORIGIN_REPO)  
 
 def handle_topics(): 
   ## Now handle topic branches.
@@ -62,7 +69,7 @@ def handle_topics():
       print "Analysing topic branch %s" % branch
       base_guess = {}
       for relbranch in BRANCHES_TO_SYNC:
-        subprocess.check_call([GIT, "checkout", "-q", branch])
+        run_git("checkout -q %s" % branch)
         commits = subprocess.Popen([GIT, "--no-pager", "log", "--pretty=oneline", "%s..HEAD" % relbranch], stdout=subprocess.PIPE).communicate()[0]
         base_guess[relbranch] = len(commits.split('\n'))
     
@@ -72,23 +79,16 @@ def handle_topics():
       # print "Likely release branches for topic %s are %s" % (branch, items)      
       base_branch = items[0][1]
       print "Rebasing using git rebase %s" % base_branch
-      subprocess.check_call([GIT, "rebase", base_branch])
-      subprocess.check_call([GIT, "push", "-f", ORIGIN_REPO, branch])
+      run_git("rebase %s" % base_branch)
+      run_git("push -f %s %s" % (ORIGIN_REPO, branch))
 
-init()
-handle_release_branches()
-print "Local clone and %s synced with %s" % (ORIGIN_REPO, UPSTREAM_REPO)
-print "Now rebasing all topic branches that start with '%s'" % TOPIC_BRANCH_PREFIX
-handle_topics()
-
-
-      
-      
-
-    
+def main():
+  init()
+  handle_release_branches()
+  print "Local clone and %s synced with %s" % (ORIGIN_REPO, UPSTREAM_REPO)
+  print "Now rebasing all topic branches that start with '%s'" % TOPIC_BRANCH_PREFIX
+  handle_topics()  
 
 
-
-
-
-
+if __name__ == "__main__":
+  main()
