@@ -17,11 +17,59 @@ follow similar processes.
 This directory contains scripts commonly used by contributors
 to Infinispan.
 
+### remove_topic_branch
+
+This script removes a topic branch after it has been pulled into
+upstream.  This should be run on a _local_ clone of your fork,
+and it removes the topic branch on your local clone _as well as_
+your remote fork.  
+
+E.g.,
+
+``$ remove_topic_branch t_ISPN-12345``
+
+### sync_with_upstream
+
+This script synchronizes your release branches (master and 4.2.x) 
+with upstream, pulling in new updates.  Also, if you have any topic 
+branches, these too will be rebased accordingly so that your topic
+branches are up to date.  It _must_ be run in the directory containing
+a local clone of your fork.
+
+ * This script _guesses_ which release branch your topic branches
+are based off, and rebases accordingly.  The guess is based on scanning
+commit histories for common points.  _This is experimental!_
+ * For topic branches to be rebased, your topic branch name _must_ start
+ with ``t_``.  Edit the script to change this.
+ 
+E.g.,
+
+``$ sync_with_upstream``
+
 ## project_admins
 
 This contains additional scripts used by project admins - folks
 with push privileges on the upstream repo - and would be used
 to supplement the scripts in ``contributors``.
+
+### pull_fast_forward
+
+This script handles a pull request.  It takes in some parameters:
+
+ * URL or remote repository name
+ * Topic branch name on remote repo
+ * Release branch to merge into
+ 
+By default, if the topic branch _cannot_ be fast-forwarded, the script
+aborts and instructs the admin to contact the contributor to 
+sync with upstream and re-submit the pull request.
+
+This behaviour can be overridden by passing in the -f flag at the end.
+
+E.g.,
+
+``$ pull_fast_forward https://maniksurtani@github.com/maniksurtani/infinispan.git t_ISPN-1234 master``
+``$ pull_fast_forward https://maniksurtani@github.com/maniksurtani/infinispan.git t_ISPN-1234 master -f``
 
 # Installation
 
