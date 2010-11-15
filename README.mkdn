@@ -70,7 +70,7 @@ E.g.,
 
 ``$ pull_fast_forward https://maniksurtani@github.com/maniksurtani/infinispan.git t_ISPN-1234 master``
 
-``$ pull_fast_forward https://maniksurtani@github.com/maniksurtani/infinispan.git t_ISPN-1234 master -f``
+``$ pull_fast_forward vlads_repo t_ISPN-1234 master -f``
 
 # Installation
 
