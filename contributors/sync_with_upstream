@@ -68,8 +68,8 @@ def handle_release_branches():
 def handle_topics():
   ## Now handle topic branches.
   b = subprocess.Popen([GIT, "branch"], stdout=subprocess.PIPE).communicate()[0]
-  branches = b.replace(' ', '').replace('*','').split('\n')
-  print "Brancges are %s " % branches
+  branches = filter(is_not_empty, b.replace(' ', '').replace('*','').split('\n'))
+  print "Branches are %s " % branches
   for branch in branches:
     if branch.startswith(TOPIC_BRANCH_PREFIX):
       print "Analysing topic branch %s" % branch
@@ -87,6 +87,9 @@ def handle_topics():
       print "Rebasing using git rebase %s" % base_branch
       run_git("rebase %s" % base_branch)
       run_git("push -f %s %s" % (ORIGIN_REPO, branch))
+
+def is_not_empty(n):
+ return n != ''
 
 def parse_args():
   global upstream_repo
