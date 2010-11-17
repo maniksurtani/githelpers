@@ -89,7 +89,7 @@ Name specific branches to update:
 
 Very simple - copy the lot to ``${HOME}/bin``.  The scripts are all 
 written in [BASH][] or [Python][] and should 
-be executable (``chmod 755 *.sh``).
+be executable (``chmod 755 ~/bin/*``).
  
 [BASH]: http://en.wikipedia.org/wiki/Bash_(Unix_shell) "BASH"
 [Python]: http://www.python.org "Python"
