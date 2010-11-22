@@ -38,13 +38,13 @@ def run_git(opts):
   for o in opts.split(' '):
     if o != '':
       call.append(o)
-  subprocess.check_call(call)
+  return subprocess.Popen(call, stdout=subprocess.PIPE).communicate()[0]
 
 def init():
   global checked_out_branch
   # Cache current branch to be able to get it back to it after done
-  checked_out_branch = subprocess.Popen([GIT, "name-rev", "--name-only", "HEAD"],
-                                        stdout=subprocess.PIPE).communicate()[0].split('\n')[0]
+  checked_out_branch = run_git("name-rev --name-only HEAD").split('\n')[0]
+  
   if not os.path.isdir(".git"):
     print "This script MUST be run in the local clone of your forked repo!"
     sys.exit(1)
@@ -59,8 +59,7 @@ def handle_release_branches():
   for branch in branches:
     print "Synchronizing release branch %s" % branch
     run_git("checkout -q %s" % branch)
-    output = subprocess.Popen([GIT, "status", "--porcelain", "--untracked-files=no"],
-                              stdout=subprocess.PIPE).communicate()[0]
+    output = run_git("status --porcelain --untracked-files=no")
     stash = False
     if output != "":
       stash = True
@@ -76,7 +75,7 @@ def handle_release_branches():
 
 def handle_topics():
   ## Now handle topic branches.
-  b = subprocess.Popen([GIT, "branch"], stdout=subprocess.PIPE).communicate()[0]
+  b = run_git("branch")
   branches = filter(is_not_empty, b.replace(' ', '').replace('*','').split('\n'))
   print "Branches are %s " % branches
   for branch in branches:
@@ -85,8 +84,7 @@ def handle_topics():
       base_guess = {}
       for relbranch in branches:
         run_git("checkout -q %s" % branch)
-        commits = subprocess.Popen([GIT, "--no-pager", "log", "--pretty=oneline", "%s..HEAD" % relbranch],
-                                   stdout=subprocess.PIPE).communicate()[0]
+        commits = run_git("--no-pager log --pretty=oneline %s..HEAD" % relbranch)
         base_guess[relbranch] = len(commits.split('\n'))
 
       # print "Likely release branches for topic %s are %s" % (branch, base_guess)

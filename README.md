@@ -26,7 +26,7 @@ your remote fork.
 
 E.g.,
 
-``$ remove_topic_branch t_ISPN-12345``
+    $ remove_topic_branch t_ISPN-12345
 
 ### sync_with_upstream
 
@@ -44,7 +44,7 @@ commit histories for common points.  _This is experimental!_
  
 E.g.,
 
-``$ sync_with_upstream``
+    $ sync_with_upstream
 
 ## project_admins
 
@@ -52,7 +52,7 @@ This contains additional scripts used by project admins - folks
 with push privileges on the upstream repo - and would be used
 to supplement the scripts in ``contributors``.
 
-### pull_fast_forward
+### handle_pull_request
 
 This script handles a pull request, and _must_ be run in a _local_ clone of _upstream_.  (*Not* a clone of your personal fork!)  It takes in some parameters:
 
@@ -60,17 +60,23 @@ This script handles a pull request, and _must_ be run in a _local_ clone of _ups
  * Topic branch name on remote repo
  * Release branch to merge into
  
-By default, if the topic branch _cannot_ be fast-forwarded, the script
-aborts and instructs the admin to contact the contributor to 
-sync with upstream and re-submit the pull request.
+This script pulls remote changes into a temporary branch, analyses log history, and cherry-picks new commits
+onto the release branch.
 
-This behaviour can be overridden by passing in the -f flag at the end.
+By default, the script _does not push to origin_.  Instead, it is up to you to now inspect the commit log, make
+changes if necessary (squash, edit, etc) and push to origin.
+
+Alternatively, if called with the ``-p`` flag, the changes _will_ be pushed to origin - but use this with care.  
+Only use ``-p`` for the simplest of changes you may be merging in.
 
 E.g.,
 
-``$ pull_fast_forward https://maniksurtani@github.com/maniksurtani/infinispan.git t_ISPN-1234 master``
+    $ handle_pull_request https://maniksurtani@github.com/maniksurtani/infinispan.git t_ISPN-1234 master
+    $ git log
+    $ git push origin master
 
-``$ pull_fast_forward vlads_repo t_ISPN-1234 master -f``
+or 
+    $ handle_pull_request vlads_repo t_ISPN-1234 master -p
 
 ### update_release_branches
 
@@ -79,11 +85,11 @@ upstream onto the release branches so you are in sync with other project admins.
 
 E.g.,
 
-``$ update_release_branches``
+    $ update_release_branches
 
 Name specific branches to update:
 
-``$ update_release_branches 4.2.x master``
+    $ update_release_branches 4.2.x master
 
 # Installation
 
