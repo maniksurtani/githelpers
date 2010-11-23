@@ -19,6 +19,15 @@ TMP_BRANCH="___tmp___"
 import sys
 import subprocess
 
+class Colors(object):
+  MAGENTA = '\033[95m'
+  GREEN = '\033[92m'
+  YELLOW = '\033[93m'
+  RED = '\033[91m'
+  CYAN = '\033[96m'  
+  END = '\033[0m'
+  UNDERLINE = '\033[4m'  
+  
 def helpAndExit():
   print '''
   Usage: handle_pull_request <remote repo to pull from> <branch on remote repo> <local release branch to merge into> [-p]
@@ -38,6 +47,12 @@ def run_git(opts):
 def is_not_empty(n):
   return n != ''
 
+def colorize(txt, color):
+  return "%s%s%s" % (color, txt, Colors.END)
+
+def commit_msg(commit):
+  return run_git('show --pretty=format:"%%s" %s' % commit).split('\n')[0]
+
 def main():
   if len(sys.argv) < 4:
     helpAndExit()
@@ -51,7 +66,7 @@ def main():
     if sys.argv[4] == "-p":
       push = True
   
-  print "Merging changes from repo %s (branch %s) and merging into %s" % (remote, remote_branch, release_branch)
+  print "Merging changes from repo %s (branch %s) and merging into %s" % (colorize(remote, Colors.YELLOW), colorize(remote_branch, Colors.YELLOW), colorize(release_branch, Colors.YELLOW))
   
   try:    
     ## Create a new temp branch to work on, based off 'release_branch'
@@ -69,22 +84,26 @@ def main():
     
     ## And cherry-pick the commits, one at a time, oldest first (hence the reverse order above)
     for commit in commits:
-      print "  > Cherry-picking commit %s" % commit
-      run_git("cherry-pick %s" % commit)
+      i = raw_input("> Cherry-picking commit %s\n%s.\nDo you want this? [y/N]" % (colorize(commit, Colors.YELLOW), commit_msg(commit)))
+      if i.upper().startswith('Y'):
+        print colorize('OK', Colors.GREEN)
+        run_git("cherry-pick %s" % commit)
+      else:
+        print colorize('Skipping', Colors.RED)
     
     ## Push to origin if we are configured to do so    
     if push:
       run_git("push %s %s" % (ORIGIN_REPO, release_branch))
-      print "Branch %s on remote %s merged into %s and pushed to upstream." % (remote_branch, remote, release_branch)
+      print "Branch %s on remote %s merged into %s and pushed to upstream." % (colorize(remote_branch, Colors.GREEN), colorize(remote, Colors.GREEN), colorize(release_branch, Colors.GREEN))
     else:      
       print '''
 Branch %s on remote %s merged into %s.
  
-** NOTE: Nothing has been pushed yet; please inspect the commit log and run
+** %s: Nothing has been pushed yet; please inspect the commit log and run
 
-    git push origin %s
+    %s git push origin %s %s
 
-if you are happy with the commits.''' % (remote_branch, remote, release_branch, release_branch)
+%s if you are happy with the commits.''' % (remote_branch, remote, release_branch, colorize('NOTE', Colors.RED), Colors.CYAN, release_branch, Colors.END, colorize('only', Colors.UNDERLINE))
     
   finally:  
     ## Cleanup
