@@ -83,16 +83,17 @@ def handle_topics():
       print "Analysing topic branch %s" % branch
       base_guess = {}
       for relbranch in branches:
-        run_git("checkout -q %s" % branch)
-        commits = run_git("--no-pager log --pretty=oneline %s..HEAD" % relbranch)
-        base_guess[relbranch] = len(commits.split('\n'))
+        if not relbranch.startswith(TOPIC_BRANCH_PREFIX):
+          run_git("checkout -q %s" % branch)
+          commits = run_git("--no-pager log --pretty=oneline %s..HEAD" % relbranch)
+          base_guess[relbranch] = len(commits.split('\n'))
 
       # print "Likely release branches for topic %s are %s" % (branch, base_guess)
       items = [(v, k) for k, v in base_guess.items()]
       items.sort()
       # print "Likely release branches for topic %s are %s" % (branch, items)
       base_branch = items[0][1]
-      print "Rebasing using git rebase %s" % base_branch
+      print "Rebasing using git rebase %s" % base_branch 
       run_git("rebase %s" % base_branch)
       run_git("push -f %s %s" % (ORIGIN_REPO, branch))
 
