@@ -83,6 +83,10 @@ def main():
     run_git("checkout -q %s" % release_branch)
     
     ## And cherry-pick the commits, one at a time, oldest first (hence the reverse order above)
+    if len(commits) == 0:
+      print "%s: No commits found!! Aborting!!" % colorize("WARNING", Colors.RED)
+      sys.exit(1)
+
     for commit in commits:
       i = raw_input("> Cherry-picking commit %s\n%s.\nDo you want this? [y/N]" % (colorize(commit, Colors.YELLOW), commit_msg(commit)))
       if i.upper().startswith('Y'):
