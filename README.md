@@ -97,6 +97,10 @@ Very simple - copy the lot to ``${HOME}/bin``.  The scripts are all
 written in [BASH][] or [Python][] and should 
 be executable (``chmod 755 ~/bin/*``).
 
+## Windows users
+
+If you use Windows, you may want to make sure git doesn't detect permission changes and mistake them as updates to the file.  Please see [this link](http://stackoverflow.com/questions/1580596/how-do-i-make-git-ignore-mode-changes-chmod) on tips on fixing this.  _Thanks to Dan Berindei for contributing this tip_
+
 # License
 
 These scripts are open source and released under the BSD License.  See the accompanying LICENSE.txt file for details.
