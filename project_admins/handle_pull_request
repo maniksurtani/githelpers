@@ -66,7 +66,7 @@ def main():
     if sys.argv[4] == "-p":
       push = True
   
-  print "Merging changes from repo %s (branch %s) and merging into %s" % (colorize(remote, Colors.YELLOW), colorize(remote_branch, Colors.YELLOW), colorize(release_branch, Colors.YELLOW))
+  print "Merging changes from repo %s (branch %s) and merging into %s" % (colorize(remote, Colors.MAGENTA), colorize(remote_branch, Colors.MAGENTA), colorize(release_branch, Colors.MAGENTA))
   
   try:    
     ## Create a new temp branch to work on, based off 'release_branch'
@@ -88,7 +88,7 @@ def main():
       sys.exit(1)
 
     for commit in commits:
-      i = raw_input("> Cherry-picking commit %s\n%s.\nDo you want this? [y/N]" % (colorize(commit, Colors.YELLOW), commit_msg(commit)))
+      i = raw_input("> Cherry-picking commit %s\n%s.\nDo you want this? [y/N]" % (colorize(commit, Colors.MAGENTA), commit_msg(commit)))
       if i.upper().startswith('Y'):
         print colorize('OK', Colors.GREEN)
         run_git("cherry-pick %s" % commit)
