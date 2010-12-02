@@ -26,7 +26,10 @@ if [ -z $1 ] ; then
 fi
 
 $GIT checkout master
-$GIT branch -D $1
-$GIT push -q -f $ORIGIN_REPO :${1}
+while [ ! -z $1 ] ; do
+  $GIT branch -D $1
+  $GIT push -q -f $ORIGIN_REPO :${1}
+  echo "Topic branch $1 removed both locally and on $ORIGIN_REPO"
+  shift
+done
 
-echo "Topic branch $1 removed both locally and on $ORIGIN_REPO"
