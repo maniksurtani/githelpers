@@ -103,7 +103,7 @@ If you use Windows, you may want to make sure git doesn't detect permission chan
 
 # License
 
-These scripts are open source and released under the BSD License.  See the accompanying LICENSE.txt file for details.
+These scripts are open source and released under the BSD License.  See the accompanying LICENSE.txt file for details, or read [this human readable form](http://creativecommons.org/licenses/BSD/).
  
 [BASH]: http://en.wikipedia.org/wiki/Bash_(Unix_shell) "BASH"
 [Python]: http://www.python.org "Python"
