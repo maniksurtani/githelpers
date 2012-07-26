@@ -16,9 +16,10 @@
 
 DEFAULT_UPSTREAM_REPO="upstream" # Can be a named remote, or a full URL, such as https://github.com/infinispan/infinispan
 ORIGIN_REPO="origin" # The fork of upstream.  Can be a named remote or a full URL.
-DEFAULT_BRANCHES_TO_SYNC=["master", "4.2.x"] # These need to be on both the upstream, your fork and your clone.
+DEFAULT_BRANCHES_TO_SYNC=["master", "5.1.x"] # These need to be on both the upstream, your fork and your clone.
 TOPIC_BRANCH_PREFIX="t_" # All branches whose name starts with this will be rebased against their updated branch point
 GIT="git" # Path to the git binary executable
+MAX_COMMITS=100
 
 #
 ############################################################################
@@ -34,11 +35,12 @@ branches = None
 checked_out_branch = None
 
 def run_git(opts):
+  print("### git %s" % opts);
   call = [GIT]
   for o in opts.split(' '):
     if o != '':
       call.append(o)
-  return subprocess.Popen(call, stdout=subprocess.PIPE).communicate()[0]
+  return subprocess.check_output(call)
 
 def init():
   global checked_out_branch
@@ -48,6 +50,11 @@ def init():
   if not os.path.isdir(".git"):
     print "This script MUST be run in the local clone of your forked repo!"
     sys.exit(1)
+
+  if have_local_changes():
+    print "You have uncommitted local changes. Please commit or stash them and try again"
+    sys.exit(2)
+
   print "Fetching new details from upstream"
   run_git("fetch -q %s" % upstream_repo)
   run_git("fetch -q %s --tags" % upstream_repo)
@@ -55,37 +62,37 @@ def init():
 def finish():
   run_git("checkout -q %s" % checked_out_branch)
 
+def have_local_changes():
+  output = run_git("status --porcelain --untracked-files=no")
+  return output != ""
+
+def is_push_needed(branch):
+  output = run_git("log -1 origin/%s..%s" % (branch, branch))
+  return output != ""
+  
 def handle_release_branches():
   for branch in branches:
     print "Synchronizing release branch %s" % branch
     run_git("checkout -q %s" % branch)
-    output = run_git("status --porcelain --untracked-files=no")
-    stash = False
-    if output != "":
-      stash = True
-      run_git("stash")
+    run_git("rebase -q %s/%s" % (upstream_repo, branch))
+    if is_push_needed(branch):
+      run_git("push -q %s %s" % (ORIGIN_REPO, branch))
 
-    run_git("pull -q %s %s" % (upstream_repo, branch))
-    run_git("push -q %s %s" % (ORIGIN_REPO, branch))
-
-    if stash:
-      run_git("stash pop")
-
-    run_git("push -q %s --tags" % ORIGIN_REPO)
+  run_git("push -q %s --tags" % ORIGIN_REPO)
 
 def handle_topics():
   ## Now handle topic branches.
   b = run_git("branch")
-  branches = filter(is_not_empty, b.replace(' ', '').replace('*','').split('\n'))
-  print "Branches are %s " % branches
-  for branch in branches:
+  topic_branches = filter(is_not_empty, b.replace(' ', '').replace('*','').split('\n'))
+  print "Branches are %s " % topic_branches
+  for branch in topic_branches:
     if branch.startswith(TOPIC_BRANCH_PREFIX):
       print "Analysing topic branch %s" % branch
+      run_git("checkout %s" % branch)
       base_guess = {}
       for relbranch in branches:
         if not relbranch.startswith(TOPIC_BRANCH_PREFIX):
-          run_git("checkout -q %s" % branch)
-          commits = run_git("--no-pager log --pretty=oneline %s..HEAD" % relbranch)
+          commits = run_git("--no-pager log --pretty=oneline -n %d %s..%s" % (MAX_COMMITS, relbranch, branch))
           base_guess[relbranch] = len(commits.split('\n'))
 
       print "   > Likely release branches for topic %s are %s" % (branch, base_guess)
@@ -95,7 +102,8 @@ def handle_topics():
       base_branch = items[0][1]
       print "Rebasing using git rebase %s" % base_branch 
       run_git("rebase %s" % base_branch)
-      run_git("push -f %s %s" % (ORIGIN_REPO, branch))
+      if is_push_needed(branch):
+        run_git("push -f %s %s" % (ORIGIN_REPO, branch))
 
 def is_not_empty(n):
  return n != ''
@@ -139,4 +147,3 @@ def main():
 
 if __name__ == "__main__":
   main()
-
