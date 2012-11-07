@@ -6,6 +6,7 @@
 # Name: sync_with_upstream
 # Author: Manik Surtani (http://github.com/maniksurtani)
 #         Galder Zamarreño (http://github.com/galderz)
+#         Dan Berindei (http://github.com/danberindei)
 # Description: This script updates a fork of an upstream repository with new
 #              changes in the upstream.  It is designed to be run on a local
 #              clone of the fork.  In addition to updating necessary branches,
@@ -19,7 +20,7 @@ ORIGIN_REPO="origin" # The fork of upstream.  Can be a named remote or a full UR
 DEFAULT_BRANCHES_TO_SYNC=["master", "5.1.x"] # These need to be on both the upstream, your fork and your clone.
 TOPIC_BRANCH_PREFIX="t_" # All branches whose name starts with this will be rebased against their updated branch point
 GIT="git" # Path to the git binary executable
-MAX_COMMITS=100
+MAX_COMMITS=500
 
 #
 ############################################################################
@@ -67,10 +68,15 @@ def have_local_changes():
   return output != ""
 
 def is_push_needed(branch):
-  output = run_git("log -1 origin/%s..%s" % (branch, branch))
-  return output != ""
+  try:
+    branch_sha = run_git("show-ref -s %s" % branch)
+    origin_branch_sha = run_git("show-ref -s origin/%s" % branch)
+    return branch_sha != origin_branch_sha
+  except subprocess.CalledProcessError:
+    return True
   
 def handle_release_branches():
+  #print "Release branches are %s" % branches
   for branch in branches:
     print "Synchronizing release branch %s" % branch
     run_git("checkout -q %s" % branch)
@@ -81,6 +87,7 @@ def handle_release_branches():
   run_git("push -q %s --tags" % ORIGIN_REPO)
 
 def handle_topics():
+  #print "Release branches are %s" % branches
   ## Now handle topic branches.
   b = run_git("branch")
   topic_branches = filter(is_not_empty, b.replace(' ', '').replace('*','').split('\n'))
@@ -95,7 +102,7 @@ def handle_topics():
           commits = run_git("--no-pager log --pretty=oneline -n %d %s..%s" % (MAX_COMMITS, relbranch, branch))
           base_guess[relbranch] = len(commits.split('\n'))
 
-      print "   > Likely release branches for topic %s are %s" % (branch, base_guess)
+      #print "   > Likely release branches for topic %s are %s" % (branch, base_guess)
       items = [(v, k) for k, v in base_guess.items()]
       items.sort()
       print "   >Likely release branches for topic %s are %s" % (branch, items)
